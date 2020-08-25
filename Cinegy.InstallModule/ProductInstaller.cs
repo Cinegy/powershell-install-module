@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Cinegy.InstallModule.SerializableModels;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SharpCompress.Archives;
 using SharpCompress.Archives.SevenZip;
