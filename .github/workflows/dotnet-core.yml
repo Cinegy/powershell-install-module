@@ -19,3 +19,8 @@ jobs:
         dotnet-version: 3.1.301
     - name: Run build script
       run: pwsh ./build.ps1
+    - name: Collect artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: cinegy-powershell-installmodule
+        path: bin/Cinegy.InstallModule
