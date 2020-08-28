@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Management.Automation;
+using Cinegy.InstallModule.LogWrapper;
 using Cinegy.InstallModule.SerializableModels;
 
 namespace Cinegy.InstallModule.Get
 {
     [Cmdlet(VerbsCommon.Get, "ProductStatus")]
     [OutputType(typeof(ProductDetails))]
-    public class GetProductStatusCmdlet : PSCmdlet
+    public class GetProductStatusCmdlet : CinegyCmdletBase
     {
         [Parameter(Mandatory = true)] public string PackageName { get; set; }
 
@@ -17,9 +18,10 @@ namespace Cinegy.InstallModule.Get
         {  
             try
             {
+                var logger = new PowershellLogger(this);
                 var appConfig = new AppConfig();
                 
-                var packageManager = new PackageManager(appConfig);
+                var packageManager = new PackageManager(appConfig,logger);
 
                 var productDetails = packageManager.GetProductDetails(PackageName, VersionTag);
                 

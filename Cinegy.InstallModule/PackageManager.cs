@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using Cinegy.InstallModule.Interfaces;
 using Cinegy.InstallModule.SerializableModels;
 using Newtonsoft.Json;
 
@@ -10,14 +11,16 @@ namespace Cinegy.InstallModule
 
     public class PackageManager
     {
+        private readonly ILogger _logger;
         private readonly AppConfig _appConfig;
         private readonly HttpClient _client = new HttpClient();
         
         #region Constructor
 
-        public PackageManager(AppConfig appConfig)
+        public PackageManager(AppConfig appConfig,ILogger logger)
         {
             _appConfig = appConfig;
+            _logger = logger;
         }
         
         #endregion
@@ -26,7 +29,7 @@ namespace Cinegy.InstallModule
         {           
             if (forceInstall)
             {
-                //_logger.LogInformation("Reinstall flag detected, erasing cached package to force reinstallation");
+                _logger.Info("Reinstall flag detected, erasing cached package to force reinstallation");
                 RemoveCachedProduct(new ProductDetails() { Name = packageName, VersionTag = versionTag });
             }
 
@@ -34,7 +37,7 @@ namespace Cinegy.InstallModule
             if(packageName==null)
             {
                 //try to read a package from the command line or ask interactively
-                //_logger.LogError("Please specify a package to install (force=true for reinstall), e.g. package=Thirdparty-Firefox-Stable,prod force=true");
+                _logger.Warn("Please specify a package to install (force=true for reinstall), e.g. package=Thirdparty-Firefox-Stable,prod force=true");
                 return null;
             }
 
@@ -42,7 +45,7 @@ namespace Cinegy.InstallModule
             
             if (productDetails.Status == ProductStatus.Current)
             {
-                //_logger.LogWarning($"Package {_products[0].Name} is already installed - reinstall with force=true flag");
+                _logger.Warn($"Package {packageName} is already installed - reinstall with force=true flag");
             }
 
             InstallProduct(productDetails);
@@ -66,7 +69,7 @@ namespace Cinegy.InstallModule
                 var versionContent = response.Content.ReadAsStringAsync().Result;
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
-                    //_logger.LogError($"Can't access version details for: {product.Name},{product.VersionTag} (Status: {response.StatusCode})");
+                    _logger.Error($"Can't access version details for: {product.Name},{product.VersionTag} (Status: {response.StatusCode})",new InvalidDataException("Version Details Unavailable"));
                     product.Status = ProductStatus.Indeterminate;
                     return product;
                 }
@@ -132,7 +135,7 @@ namespace Cinegy.InstallModule
             }
             catch (Exception ex)
             {
-                //_logger.LogError($"Problem determing product {product.Name} status: {ex.Message}");
+                _logger.Error($"Problem determining product {productName} status: {ex.Message}",ex);
                 return null;
             }
         }
@@ -150,7 +153,7 @@ namespace Cinegy.InstallModule
             }
             catch (Exception ex)
             {
-                //_logger.LogError($"Problem removing product install cache folder: {ex.Message}");
+                _logger.Error($"Problem removing product install cache folder: {ex.Message}",ex);
             }
         }
 
@@ -160,16 +163,16 @@ namespace Cinegy.InstallModule
 
             try
             {
-                //_logger.LogInformation($"Checking {product.Name} - current status: {product.Status}");
+                _logger.Info($"Checking {product.Name} - current status: {product.Status}");
 
-                var installer = new ProductInstaller(_appConfig);
+                var installer = new ProductInstaller(_appConfig,_logger);
 
                 installer.Run(product);
 
             }
             catch (Exception ex)
             {
-                //_logger.LogError($"Problem running product install job: {ex.Message}");
+                _logger.Error($"Problem running product install job: {ex.Message}",ex);
             }
         }
 

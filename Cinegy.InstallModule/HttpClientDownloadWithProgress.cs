@@ -25,7 +25,6 @@ namespace Cinegy.InstallModule
         public async Task StartDownload()
         {
             _httpClient = new HttpClient { Timeout = TimeSpan.FromDays(1) };
-
             var response = await _httpClient.GetAsync(_downloadUrl, HttpCompletionOption.ResponseHeadersRead);
             await DownloadFileFromHttpResponseMessage(response);
             response.Dispose();
