@@ -264,6 +264,7 @@ namespace Cinegy.InstallModule
                     {
                         WorkingDirectory = Path.GetDirectoryName(scriptName) ?? string.Empty,
                         RedirectStandardOutput = true,
+                        UseShellExecute = false,
                         CreateNoWindow = true
                     }
                 };
